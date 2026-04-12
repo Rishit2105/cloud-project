@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CloudOptimize - Sign in to your multi-cloud cost intelligence platform">
+    <title>CloudOptimize — Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: rgba(17, 24, 39, 0.65);
+            --border-color: rgba(99, 102, 241, 0.15);
+            --border-glow: rgba(99, 102, 241, 0.45);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-1: #6366f1;
+            --accent-2: #8b5cf6;
+            --accent-3: #06b6d4;
+            --gradient-1: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* ── Animated background ── */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            animation: float 20s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            width: 420px;
+            height: 420px;
+            background: #6366f1;
+            top: -10%;
+            left: -5%;
+        }
+
+        .orb-2 {
+            width: 360px;
+            height: 360px;
+            background: #8b5cf6;
+            bottom: -8%;
+            right: -4%;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 280px;
+            height: 280px;
+            background: #06b6d4;
+            top: 40%;
+            right: 15%;
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(40px, -30px) scale(1.08);
+            }
+        }
+
+        /* ── Login card ── */
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 44px 40px 40px;
+            backdrop-filter: blur(40px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(99, 102, 241, 0.06);
+            animation: cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(32px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── Branding ── */
+        .brand {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: var(--gradient-1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35);
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.4px;
+        }
+
+        .brand p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            letter-spacing: 0.2px;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--gradient-1);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .tab-btn:not(.active):hover {
+            color: var(--text-secondary);
+        }
+
+        /* ── Form ── */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ── Submit button ── */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.12) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover::before {
+            opacity: 1;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .submit-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+
+        .submit-btn.loading .btn-text {
+            display: none;
+        }
+
+        .submit-btn.loading .spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            backdrop-filter: blur(16px);
+            z-index: 1000;
+            transform: translateX(140%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 380px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: rgba(244, 63, 94, 0.9);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .toast.success {
+            background: rgba(16, 185, 129, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        /* ── Footer ── */
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .login-footer span {
+            color: var(--accent-3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated background -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- Branding -->
+            <div class="brand">
+                <div class="brand-icon">&#9729;</div>
+                <h1>CloudOptimize</h1>
+                <p>Multi-Cloud Cost Intelligence Platform</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+                <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">Create Account</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="loginUser">Username</label>
+                    <input class="form-input" id="loginUser" type="text" placeholder="Enter your username"
+                        autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginPass">Password</label>
+                    <input class="form-input" id="loginPass" type="password" placeholder="Enter your password"
+                        autocomplete="current-password" required>
+                </div>
+                <button class="submit-btn" type="submit" id="loginBtn">
+                    <span class="btn-text">Sign In</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" style="display:none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label" for="regUser">Username</label>
+                    <input class="form-input" id="regUser" type="text" placeholder="Choose a username (min 3 chars)"
+                        autocomplete="username" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="regPass">Password</label>
+                    <input class="form-input" id="regPass" type="password" placeholder="Choose a password (min 6 chars)"
+                        autocomplete="new-password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="regPassConfirm">Confirm Password</label>
+                    <input class="form-input" id="regPassConfirm" type="password" placeholder="Repeat your password"
+                        autocomplete="new-password" required minlength="6">
+                </div>
+                <button class="submit-btn" type="submit" id="regBtn">
+                    <span class="btn-text">Create Account</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                Default: <span>admin</span> / <span>admin123</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // If already logged in, go straight to configure
+        if (localStorage.getItem('token')) {
+            window.location.href = '/configure';
+        }
+
+        function switchTab(tab) {
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+        }
+
+        function showToast(msg, type = 'error') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type + ' show';
+            setTimeout(() => t.classList.remove('show'), 4000);
+        }
+
+        function setLoading(btn, loading) {
+            btn.disabled = loading;
+            btn.classList.toggle('loading', loading);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            setLoading(btn, true);
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('loginUser').value.trim(),
+                        password: document.getElementById('loginPass').value
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('username', data.username);
+                showToast('Welcome back, ' + data.username + '!', 'success');
+
+                setTimeout(() => window.location.href = '/configure', 600);
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const pass = document.getElementById('regPass').value;
+            const confirm = document.getElementById('regPassConfirm').value;
+
+            if (pass !== confirm) {
+                showToast('Passwords do not match');
+                return;
+            }
+
+            const btn = document.getElementById('regBtn');
+            setLoading(btn, true);
+
+            try {
+                const res = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('regUser').value.trim(),
+                        password: pass
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Registration failed');
+
+                showToast(data.message + ' — Please sign in.', 'success');
+                switchTab('login');
+                document.getElementById('loginUser').value = document.getElementById('regUser').value;
+                document.getElementById('registerForm').reset();
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+    </script>
+</body>
+
+</html>

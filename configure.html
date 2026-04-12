@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudOptimize — Configuration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --border-color: rgba(99, 102, 241, 0.15);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-1: #6366f1;
+            --accent-2: #8b5cf6;
+            --aws: #ff9900;
+            --azure: #0078d4;
+            --gcp: #4285f4;
+            --success: #10b981;
+            --danger: #f43f5e;
+            --gradient-1: linear-gradient(135deg, #6366f1, #8b5cf6);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .username {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(244, 63, 94, 0.2);
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .provider-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s;
+        }
+
+        .provider-card.aws { border-top: 3px solid var(--aws); }
+        .provider-card.azure { border-top: 3px solid var(--azure); }
+        .provider-card.gcp { border-top: 3px solid var(--gcp); }
+
+        .provider-header {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .provider-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .provider-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .provider-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        /* Toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: var(--gradient-1);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .provider-body {
+            padding: 0 24px 24px;
+            display: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
+            padding-top: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-1);
+        }
+
+        .test-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-top: 12px;
+        }
+
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .test-result {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .btn-continue, .btn-save {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-save {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-save:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-continue {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            background: rgba(16, 185, 129, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transform: translateY(150%);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">☁️</div>
+                <h1>CloudOptimize</h1>
+            </div>
+            <div class="user-info">
+                <span class="username" id="usernameDisplay">user</span>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2 class="page-title">Connect Services</h2>
+            <p class="page-desc">Enable and configure the cloud providers you want to monitor.</p>
+        </div>
+
+        <div id="providers">
+            <!-- AWS -->
+            <div class="provider-card aws">
+                <div class="provider-header">
+                    <div class="provider-info">
+                        <div class="provider-icon">🔶</div>
+                        <div>
+                            <div class="provider-name">Amazon Web Services</div>
+                            <div class="connection-status" id="status-AWS">Not connected</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-AWS" onchange="toggleProvider('AWS')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="provider-body" id="body-AWS">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label class="form-label">Access Key ID</label>
+                            <input type="text" class="form-input" id="AWS_ACCESS_KEY_ID" placeholder="AKIAIOSFODNN7EXAMPLE">
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Secret Access Key</label>
+                            <input type="password" class="form-input" id="AWS_SECRET_ACCESS_KEY" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Region</label>
+                            <input type="text" class="form-input" id="AWS_REGION" placeholder="us-east-1" value="us-east-1">
+                        </div>
+                    </div>
+                    <button class="test-btn" onclick="testConnection('AWS')">Test Connection</button>
+                    <div class="test-result" id="result-AWS"></div>
+                </div>
+            </div>
+
+            <!-- Azure -->
+            <div class="provider-card azure">
+                <div class="provider-header">
+                    <div class="provider-info">
+                        <div class="provider-icon">🔷</div>
+                        <div>
+                            <div class="provider-name">Microsoft Azure</div>
+                            <div class="connection-status" id="status-Azure">Not connected</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-Azure" onchange="toggleProvider('Azure')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="provider-body" id="body-Azure">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Subscription ID</label>
+                            <input type="text" class="form-input" id="AZURE_SUBSCRIPTION_ID">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tenant ID</label>
+                            <input type="text" class="form-input" id="AZURE_TENANT_ID">
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Client ID (App ID)</label>
+                            <input type="text" class="form-input" id="AZURE_CLIENT_ID">
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Client Secret</label>
+                            <input type="password" class="form-input" id="AZURE_CLIENT_SECRET">
+                        </div>
+                    </div>
+                    <button class="test-btn" onclick="testConnection('AZURE')">Test Connection</button>
+                    <div class="test-result" id="result-AZURE"></div>
+                </div>
+            </div>
+
+            <!-- GCP -->
+            <div class="provider-card gcp">
+                <div class="provider-header">
+                    <div class="provider-info">
+                        <div class="provider-icon">💠</div>
+                        <div>
+                            <div class="provider-name">Google Cloud Platform</div>
+                            <div class="connection-status" id="status-GCP">Not connected</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-GCP" onchange="toggleProvider('GCP')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="provider-body" id="body-GCP">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label class="form-label">Project ID</label>
+                            <input type="text" class="form-input" id="GCP_PROJECT_ID" placeholder="my-gcp-project-123">
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Service Account Key Path (.json)</label>
+                            <input type="text" class="form-input" id="GCP_SERVICE_ACCOUNT_KEY" placeholder="/path/to/credentials.json">
+                        </div>
+                    </div>
+                    <button class="test-btn" onclick="testConnection('GCP')">Test Connection</button>
+                    <div class="test-result" id="result-GCP"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-save" onclick="saveConfig()">Save Settings</button>
+            <button class="btn-continue" onclick="goToDashboard()">Go to Dashboard →</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Configuration saved successfully!</div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        document.getElementById('usernameDisplay').textContent = localStorage.getItem('username') || 'User';
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if(msg) t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function toggleProvider(provider) {
+            const isChecked = document.getElementById(`toggle-${provider}`).checked;
+            document.getElementById(`body-${provider}`).style.display = isChecked ? 'block' : 'none';
+        }
+
+        async function loadConfig() {
+            try {
+                const res = await fetch('/config/load', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        localStorage.clear();
+                        window.location.href = '/';
+                    }
+                    return;
+                }
+                const data = await res.json();
+                
+                // Enable toggles
+                data.enabled_clouds.forEach(cloud => {
+                    const toggle = document.getElementById(`toggle-${cloud}`);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggleProvider(cloud);
+                    }
+                });
+
+                // Fill credentials
+                for (const [key, value] of Object.entries(data.credentials)) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = value;
+                        // Determine provider to show connected status if keys exist
+                        const prefix = key.split('_')[0];
+                        let prov = '';
+                        if (prefix === 'AWS') prov = 'AWS';
+                        if (prefix === 'AZURE') prov = 'Azure';
+                        if (prefix === 'GCP') prov = 'GCP';
+                        
+                        if (prov) {
+                            const stat = document.getElementById(`status-${prov}`);
+                            stat.textContent = 'Configured ✓';
+                            stat.className = 'connection-status connected';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function saveConfig() {
+            const enabled = [];
+            ['AWS', 'Azure', 'GCP'].forEach(p => {
+                if (document.getElementById(`toggle-${p}`).checked) enabled.push(p);
+            });
+
+            const inputs = document.querySelectorAll('.form-input');
+            const creds = {};
+            inputs.forEach(input => {
+                if (input.value && !input.value.includes('••••')) {
+                    creds[input.id] = input.value;
+                }
+            });
+
+            try {
+                const res = await fetch('/config/save', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ enabled_clouds: enabled, credentials: creds })
+                });
+                if (res.ok) {
+                    showToast('Configuration saved successfully!');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function testConnection(provider) {
+            const resultDiv = document.getElementById(`result-${provider}`);
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'rgba(255, 255, 255, 0.05)';
+            resultDiv.style.color = 'var(--text-primary)';
+            resultDiv.textContent = 'Testing connection... (may take a moment)';
+
+            const creds = {};
+            document.querySelectorAll(`.provider-card.${provider.toLowerCase()} .form-input`).forEach(input => {
+                creds[input.id] = input.value;
+            });
+
+            try {
+                const res = await fetch('/config/test-connection', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ provider, credentials: creds })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'connected') {
+                    resultDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+                    resultDiv.style.color = 'var(--success)';
+                    resultDiv.textContent = '✓ ' + data.message;
+                    
+                    const statMap = { 'AWS': 'AWS', 'AZURE': 'Azure', 'GCP': 'GCP' };
+                    document.getElementById(`status-${statMap[provider]}`).textContent = 'Connected ✓';
+                    document.getElementById(`status-${statMap[provider]}`).className = 'connection-status connected';
+                } else if (data.status === 'sdk_missing') {
+                    resultDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+                    resultDiv.style.color = '#f59e0b';
+                    resultDiv.textContent = '⚠️ ' + data.message;
+                } else {
+                    resultDiv.style.background = 'rgba(244, 63, 94, 0.1)';
+                    resultDiv.style.color = 'var(--danger)';
+                    resultDiv.textContent = '❌ ' + data.message;
+                }
+            } catch (e) {
+                resultDiv.style.background = 'rgba(244, 63, 94, 0.1)';
+                resultDiv.style.color = 'var(--danger)';
+                resultDiv.textContent = '❌ Error testing connection';
+            }
+        }
+
+        function goToDashboard() {
+            saveConfig().then(() => {
+                window.location.href = '/dashboard';
+            });
+        }
+
+        function logout() {
+            fetch('/auth/logout', { 
+                method: 'POST', 
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).finally(() => {
+                localStorage.clear();
+                window.location.href = '/';
+            });
+        }
+
+        loadConfig();
+    </script>
+</body>
+
+</html>
