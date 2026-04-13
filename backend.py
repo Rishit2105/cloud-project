@@ -86,6 +86,9 @@ def init_db():
 
 init_db()
 
+# Ensure the .env file exists so it's always available
+ENV_PATH.touch(exist_ok=True)
+
 # ═══════════════════════════════════════════════════════════════════
 # Session Management
 # ═══════════════════════════════════════════════════════════════════
