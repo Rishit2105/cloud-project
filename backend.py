@@ -27,8 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = "db.sqlite3"
-ENV_PATH = ".env"
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "db.sqlite3"
+ENV_PATH = BASE_DIR / ".env"
 
 # ═══════════════════════════════════════════════════════════════════
 # Database
@@ -124,17 +125,17 @@ class TestConnectionRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def serve_login():
-    return Path("login.html").read_text(encoding="utf-8")
+    return (BASE_DIR / "login.html").read_text(encoding="utf-8")
 
 
 @app.get("/configure", response_class=HTMLResponse)
 def serve_configure():
-    return Path("configure.html").read_text(encoding="utf-8")
+    return (BASE_DIR / "configure.html").read_text(encoding="utf-8")
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def serve_dashboard():
-    return Path("frontend.html").read_text(encoding="utf-8")
+    return (BASE_DIR / "frontend.html").read_text(encoding="utf-8")
 
 # ═══════════════════════════════════════════════════════════════════
 # Auth Endpoints
@@ -368,20 +369,13 @@ def _load_env_creds() -> dict:
 
 def fetch_aws_costs(creds: dict):
     """Pull last-30-day costs from AWS Cost Explorer."""
-    aws_access_key = creds.get("AWS_ACCESS_KEY_ID")
-    aws_secret_key = creds.get("AWS_SECRET_ACCESS_KEY")
-    
-    if not aws_access_key or not aws_secret_key:
-        print("[AWS] Credentials missing. Skipping live fetch.")
-        return None
-
     try:
         import boto3
 
         ce = boto3.client(
             "ce",
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key,
+            aws_access_key_id=creds.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=creds.get("AWS_SECRET_ACCESS_KEY"),
             region_name=creds.get("AWS_REGION", "us-east-1"),
         )
         end = datetime.utcnow()
@@ -418,17 +412,8 @@ def fetch_aws_costs(creds: dict):
 
 def fetch_azure_costs(creds: dict):
     """Pull last-30-day costs from Azure Cost Management."""
-    tenant_id = creds.get("AZURE_TENANT_ID")
-    client_id = creds.get("AZURE_CLIENT_ID")
-    client_secret = creds.get("AZURE_CLIENT_SECRET")
-    subscription_id = creds.get("AZURE_SUBSCRIPTION_ID")
-
-    if not all([tenant_id, client_id, client_secret, subscription_id]):
-        print("[Azure] Credentials missing. Skipping live fetch.")
-        return None
-
     try:
-        from azure.identity import ClientSecretCredential
+        from azure.identity import ClientSecretCredential, DefaultAzureCredential
         from azure.mgmt.costmanagement import CostManagementClient
         from azure.mgmt.costmanagement.models import (
             QueryDefinition,
@@ -438,13 +423,22 @@ def fetch_azure_costs(creds: dict):
             QueryGrouping,
         )
 
-        credential = ClientSecretCredential(
-            tenant_id=tenant_id,
-            client_id=client_id,
-            client_secret=client_secret,
-        )
+        tenant_id = creds.get("AZURE_TENANT_ID")
+        client_id = creds.get("AZURE_CLIENT_ID")
+        client_secret = creds.get("AZURE_CLIENT_SECRET")
+        subscription_id = creds.get("AZURE_SUBSCRIPTION_ID")
+
+        if tenant_id and client_id and client_secret:
+            credential = ClientSecretCredential(
+                tenant_id=tenant_id,
+                client_id=client_id,
+                client_secret=client_secret,
+            )
+        else:
+            credential = DefaultAzureCredential()
+
         client = CostManagementClient(credential)
-        scope = f"/subscriptions/{subscription_id}"
+        scope = f"/subscriptions/{subscription_id}" if subscription_id else f"/subscriptions/{creds.get('AZURE_SUBSCRIPTION_ID')}"
 
         end = datetime.utcnow()
         start = end - timedelta(days=30)
@@ -486,18 +480,17 @@ def fetch_azure_costs(creds: dict):
 
 def fetch_gcp_costs(creds: dict):
     """Pull last-30-day costs from GCP BigQuery billing export."""
-    project_id = creds.get("GCP_PROJECT_ID")
-    sa_key = creds.get("GCP_SERVICE_ACCOUNT_KEY")
-
-    if not project_id or not sa_key or not os.path.exists(sa_key):
-        print("[GCP] Credentials missing or service account file not found. Skipping live fetch.")
-        return None
-
     try:
         from google.cloud import bigquery
         from google.oauth2 import service_account
 
-        bq_creds = service_account.Credentials.from_service_account_file(sa_key)
+        project_id = creds.get("GCP_PROJECT_ID")
+        sa_key = creds.get("GCP_SERVICE_ACCOUNT_KEY")
+
+        bq_creds = None
+        if sa_key and os.path.exists(sa_key):
+            bq_creds = service_account.Credentials.from_service_account_file(sa_key)
+        
         client = bigquery.Client(project=project_id, credentials=bq_creds)
         start = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
 
@@ -567,7 +560,8 @@ def get_cloud_data(enabled_clouds: List[str] | None = None):
         else:
             try:
                 if df_fallback is None:
-                    df_fallback = pd.read_csv("data.csv")
+                    csv_path = BASE_DIR / "data.csv"
+                    df_fallback = pd.read_csv(csv_path)
                 fb = df_fallback[df_fallback["cloud"] == cloud].to_dict("records")
                 all_records.extend(fb)
                 sources[cloud] = "demo"
