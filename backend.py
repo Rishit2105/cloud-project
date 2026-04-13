@@ -368,13 +368,20 @@ def _load_env_creds() -> dict:
 
 def fetch_aws_costs(creds: dict):
     """Pull last-30-day costs from AWS Cost Explorer."""
+    aws_access_key = creds.get("AWS_ACCESS_KEY_ID")
+    aws_secret_key = creds.get("AWS_SECRET_ACCESS_KEY")
+    
+    if not aws_access_key or not aws_secret_key:
+        print("[AWS] Credentials missing. Skipping live fetch.")
+        return None
+
     try:
         import boto3
 
         ce = boto3.client(
             "ce",
-            aws_access_key_id=creds.get("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=creds.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
             region_name=creds.get("AWS_REGION", "us-east-1"),
         )
         end = datetime.utcnow()
@@ -403,8 +410,7 @@ def fetch_aws_costs(creds: dict):
                             "cpu_usage": random.randint(5, 85),
                         }
                     )
-        if records:
-            return records
+        return records
     except Exception as e:
         print(f"[AWS] Live fetch failed: {e}")
     return None
@@ -412,6 +418,15 @@ def fetch_aws_costs(creds: dict):
 
 def fetch_azure_costs(creds: dict):
     """Pull last-30-day costs from Azure Cost Management."""
+    tenant_id = creds.get("AZURE_TENANT_ID")
+    client_id = creds.get("AZURE_CLIENT_ID")
+    client_secret = creds.get("AZURE_CLIENT_SECRET")
+    subscription_id = creds.get("AZURE_SUBSCRIPTION_ID")
+
+    if not all([tenant_id, client_id, client_secret, subscription_id]):
+        print("[Azure] Credentials missing. Skipping live fetch.")
+        return None
+
     try:
         from azure.identity import ClientSecretCredential
         from azure.mgmt.costmanagement import CostManagementClient
@@ -424,12 +439,12 @@ def fetch_azure_costs(creds: dict):
         )
 
         credential = ClientSecretCredential(
-            tenant_id=creds.get("AZURE_TENANT_ID"),
-            client_id=creds.get("AZURE_CLIENT_ID"),
-            client_secret=creds.get("AZURE_CLIENT_SECRET"),
+            tenant_id=tenant_id,
+            client_id=client_id,
+            client_secret=client_secret,
         )
         client = CostManagementClient(credential)
-        scope = f"/subscriptions/{creds.get('AZURE_SUBSCRIPTION_ID')}"
+        scope = f"/subscriptions/{subscription_id}"
 
         end = datetime.utcnow()
         start = end - timedelta(days=30)
@@ -463,8 +478,7 @@ def fetch_azure_costs(creds: dict):
                         "cpu_usage": random.randint(5, 85),
                     }
                 )
-        if records:
-            return records
+        return records
     except Exception as e:
         print(f"[Azure] Live fetch failed: {e}")
     return None
@@ -472,17 +486,18 @@ def fetch_azure_costs(creds: dict):
 
 def fetch_gcp_costs(creds: dict):
     """Pull last-30-day costs from GCP BigQuery billing export."""
+    project_id = creds.get("GCP_PROJECT_ID")
+    sa_key = creds.get("GCP_SERVICE_ACCOUNT_KEY")
+
+    if not project_id or not sa_key or not os.path.exists(sa_key):
+        print("[GCP] Credentials missing or service account file not found. Skipping live fetch.")
+        return None
+
     try:
         from google.cloud import bigquery
         from google.oauth2 import service_account
 
-        project_id = creds.get("GCP_PROJECT_ID")
-        sa_key = creds.get("GCP_SERVICE_ACCOUNT_KEY", "")
-
-        bq_creds = None
-        if sa_key and os.path.exists(sa_key):
-            bq_creds = service_account.Credentials.from_service_account_file(sa_key)
-
+        bq_creds = service_account.Credentials.from_service_account_file(sa_key)
         client = bigquery.Client(project=project_id, credentials=bq_creds)
         start = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
 
@@ -508,8 +523,7 @@ def fetch_gcp_costs(creds: dict):
                     "cpu_usage": random.randint(5, 85),
                 }
             )
-        if records:
-            return records
+        return records
     except Exception as e:
         print(f"[GCP] Live fetch failed: {e}")
     return None
@@ -517,10 +531,6 @@ def fetch_gcp_costs(creds: dict):
 
 # ── Data cache ──────────────────────────────────────────────────
 data_cache: dict = {"data": None, "timestamp": None, "sources": {}}
-
-# Keep fallback CSV in memory
-df_fallback = pd.read_csv("data.csv")
-
 
 def get_cloud_data(enabled_clouds: List[str] | None = None):
     """Fetch data for each enabled cloud (live → fallback)."""
@@ -545,17 +555,25 @@ def get_cloud_data(enabled_clouds: List[str] | None = None):
         "GCP": fetch_gcp_costs,
     }
 
+    df_fallback = None
+
     for cloud, fetcher in fetchers.items():
         if enabled_clouds and cloud not in enabled_clouds:
             continue
         live = fetcher(creds)
-        if live:
+        if live is not None:
             all_records.extend(live)
             sources[cloud] = "live"
         else:
-            fb = df_fallback[df_fallback["cloud"] == cloud].to_dict("records")
-            all_records.extend(fb)
-            sources[cloud] = "demo"
+            try:
+                if df_fallback is None:
+                    df_fallback = pd.read_csv("data.csv")
+                fb = df_fallback[df_fallback["cloud"] == cloud].to_dict("records")
+                all_records.extend(fb)
+                sources[cloud] = "demo"
+            except Exception as e:
+                print(f"[{cloud}] Failed to load fallback CSV: {e}")
+                sources[cloud] = "error"
 
     df = pd.DataFrame(all_records) if all_records else pd.DataFrame(
         columns=["date", "cloud", "service", "cost", "cpu_usage"]
